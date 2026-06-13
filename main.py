@@ -50,10 +50,11 @@ def start_command(message):
         )
         return
         
-    bot.send_message(message.chat.id, "✅ Welcome! Send me a Terabox link, and I will extract the direct streams for you.")
+    bot.send_message(message.chat.id, "✅ Welcome! Send me a link, and I will extract the direct streams for you.")
 
-@bot.message_handler(func=lambda message: 'terabox.com' in message.text or 'teraboxapp.com' in message.text or '1024tera.com' in message.text)
-def handle_terabox_link(message):
+# Catches any message containing http:// or https://
+@bot.message_handler(func=lambda message: message.text and ('http://' in message.text or 'https://' in message.text))
+def handle_any_link(message):
     user_id = message.from_user.id
     
     if not check_sub(user_id):
@@ -68,6 +69,8 @@ def handle_terabox_link(message):
 
     processing_msg = bot.reply_to(message, "🔄 Extracting link, please wait...")
     
+    # Extract the link from the message (assumes the message is just the URL or contains it)
+    # If the user sends text with a link, we grab just the text. For better accuracy, we strip whitespace.
     url = message.text.strip()
     api_url = f"https://tera-download-rose.vercel.app/api/extract?url={url}"
     
@@ -78,7 +81,6 @@ def handle_terabox_link(message):
             data = response.get("data", {})
             streams = data.get("streams", {})
             
-            # REMOVED FILE NAME HERE
             text = "👇 **Select Quality to Play (Lowest to Highest):**"
             
             sorted_streams = sorted(streams.items(), key=lambda item: get_resolution_value(item[0]))
@@ -108,9 +110,10 @@ def handle_terabox_link(message):
             message_id=processing_msg.message_id
         )
 
+# Catch-all for text messages that DO NOT contain a link
 @bot.message_handler(func=lambda message: True)
 def handle_other_messages(message):
-    bot.reply_to(message, "Please send a valid Terabox link.")
+    bot.reply_to(message, "Please send a valid link.")
 
 # --- START BOT ---
 if __name__ == "__main__":
