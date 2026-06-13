@@ -5,15 +5,12 @@ import requests
 from dotenv import load_dotenv
 
 # --- LOAD ENVIRONMENT VARIABLES ---
-# This automatically reads the .env file in the same directory
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-# Convert CHANNEL_ID to an integer since environment variables are loaded as strings
 CHANNEL_ID = int(os.getenv("CHANNEL_ID")) 
 CHANNEL_INVITE_LINK = os.getenv("CHANNEL_INVITE_LINK")
 
-# Ensure the token was loaded
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN is missing. Please check your .env file.")
 
@@ -79,16 +76,15 @@ def handle_terabox_link(message):
         
         if response.get("success"):
             data = response.get("data", {})
-            file_name = data.get("file_name", "Unknown_File.mp4")
             streams = data.get("streams", {})
             
-            text = f"🎬 **File Name:** `{file_name}`\n\n👇 **Select Quality to Play (Lowest to Highest):**"
+            # REMOVED FILE NAME HERE
+            text = "👇 **Select Quality to Play (Lowest to Highest):**"
             
             sorted_streams = sorted(streams.items(), key=lambda item: get_resolution_value(item[0]))
             
             markup = InlineKeyboardMarkup()
             for resolution, link in sorted_streams:
-                # Use WebAppInfo to open the URL directly inside a Telegram Web App
                 markup.add(InlineKeyboardButton(f"▶️ Play {resolution}", web_app=WebAppInfo(url=link)))
                 
             bot.edit_message_text(
